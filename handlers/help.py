@@ -4,8 +4,8 @@ from loader import dp
 
 
 @dp.message_handler(CommandHelp())
-async def help_info(message: types.Message):
-    await message.answer('Список комманд:'
+async def help_info(message: types.Message) -> None:
+    await message.answer('Список команд:'
                          '\n/start - Запустить бота 💻'
                          '\n/help - Помощь ℹ️'
                          '\n/lowprice - вывод самых дешёвых отелей в городе 📉'
