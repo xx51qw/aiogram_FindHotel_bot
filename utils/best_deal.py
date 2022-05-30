@@ -228,7 +228,8 @@ async def send_result_without_photo(callback: CallbackQuery, state: FSMContext, 
                                               f'\nРейтинг отеля: {rating} ⭐️'
                                               f'\nЦена за ночь: {one_night_price} ₽'
                                               f'\nЦена за весь период: {full_price} ₽'
-                                              f'\nСсылка на номер: {hotel_link}')
+                                              f'\nСсылка на номер: {hotel_link}',
+                                              disable_web_page_preview=True)
 
             await state.reset_state()
             await callback.message.answer('Команда выполнена. Для просмотра всего функционала введите /help')
@@ -300,7 +301,8 @@ async def send_result_with_photo(callback: CallbackQuery, state: FSMContext, cmd
                                               f'\nРейтинг отеля: {rating} ⭐️'
                                               f'\nЦена за ночь: {one_night_price} ₽'
                                               f'\nЦена за весь период: {full_price} ₽'
-                                              f'\nСсылка на номер: {hotel_link}')
+                                              f'\nСсылка на номер: {hotel_link}',
+                                              disable_web_page_preview=True)
 
             await state.reset_state()
             await callback.message.answer('Команда выполнена. Для просмотра всего функционала введите /help')
