@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timedelta
 from json import JSONDecodeError
+
 from loguru import logger
 from typing import Callable
 from aiogram.dispatcher.storage import FSMContext
@@ -69,62 +70,72 @@ async def get_entry_date(callback: CallbackQuery, state: FSMContext, current_sta
 
 @logger.catch
 async def price_range(message: Message, state: FSMContext, current_state) -> None:
-    price = message.text
-    list_of_prices = price.split()
-    if len(list_of_prices) == 2:
-        if list_of_prices[0].isdigit() and list_of_prices[1].isdigit():
-            start_price = int(list_of_prices[0])
-            finish_price = int(list_of_prices[1])
-            if start_price > finish_price:
-                await message.answer('Ошибка ввода! ⛔ \nСтартовая цена не может быть больше конечной, '
-                                     'попробуйте снова')
-                await current_state.price.set()
+    try:
+        price = message.text
+        list_of_prices = price.split()
+        if len(list_of_prices) == 2:
+            if list_of_prices[0].isdigit() and list_of_prices[1].isdigit():
+                start_price = int(list_of_prices[0])
+                finish_price = int(list_of_prices[1])
+                if start_price > finish_price:
+                    await message.answer('Ошибка ввода! ⛔ \nСтартовая цена не может быть больше конечной, '
+                                         'попробуйте снова')
+                    await current_state.price.set()
 
-            elif start_price == finish_price:
-                await message.answer('Ошибка ввода! ⛔ \nВведенные цены не могут быть одинаковыми, '
-                                     'попробуйте снова')
+                elif start_price == finish_price:
+                    await message.answer('Ошибка ввода! ⛔ \nВведенные цены не могут быть одинаковыми, '
+                                         'попробуйте снова')
+
+                else:
+                    await state.update_data(start_price=start_price, finish_price=finish_price)
+                    logger.info(f'Пользователь  c id {message.from_user.id} '
+                                f'выбрал стоимость от {start_price} до {finish_price}')
+                    await message.answer('Введите диапазон расстояния отеля от центра города в км, пример: 0.3 1.5')
+                    await current_state.distance.set()
 
             else:
-                await state.update_data(start_price=start_price, finish_price=finish_price)
-                logger.info(f'Пользователь  c id {message.from_user.id} '
-                            f'выбрал стоимость от {start_price} до {finish_price}')
-                await message.answer('Введите диапазон расстояния отеля от центра города в км, пример: 0.3 1.5')
-                await current_state.distance.set()
+                await message.answer('Ошибка ввода! ⛔ \nВводить можно только цифры, попробуйте снова')
+                await current_state.price.set()
 
         else:
-            await message.answer('Ошибка ввода! ⛔ \nВводить можно только цифры, попробуйте снова')
+            await message.answer('Ошибка ввода! ⛔ \nНужно ввести два значения, попробуйте снова')
             await current_state.price.set()
 
-    else:
-        await message.answer('Ошибка ввода! ⛔ \nНужно ввести два значения, попробуйте снова')
-        await current_state.price.set()
+    except Exception as ex:
+        logger.error(ex)
 
 
 @logger.catch
 async def range_of_distances(message: Message, state: FSMContext, current_state) -> None:
-    answer = message.text
-    list_of_distances = answer.split()
-    if len(list_of_distances) == 2:
-        start_distance = list_of_distances[0]
-        finish_distance = list_of_distances[1]
-        if start_distance.isdigit() or finish_distance.isdigit() or re.findall(r"\d*\.\d+", start_distance) \
-                or re.findall(r"\d*\.\d+", finish_distance):
-            if float(start_distance) > float(finish_distance):
-                await message.answer('Ошибка ввода! ⛔ \nПервое число не может быть больше второго, '
-                                     'попробуйте снова')
-                await current_state.distance.set()
-            else:
-                logger.info(f'Пользователь  c id {message.from_user.id} '
-                            f'выбрал расстояние до центра  от {start_distance}км до {finish_distance}км')
-                await state.update_data(start_distance=start_distance, finish_distance=finish_distance)
-                await message.answer("Заезд: ", reply_markup=await SimpleCalendar().start_calendar())
-                await current_state.arrival_date.set()
+    try:
+        answer = message.text
+        list_of_distances = answer.split()
+        if len(list_of_distances) == 2:
+            start_distance = list_of_distances[0]
+            finish_distance = list_of_distances[1]
+            if start_distance.isdigit() or finish_distance.isdigit() or re.findall(r"\d*\.\d+", start_distance) \
+                    or re.findall(r"\d*\.\d+", finish_distance):
+                try:
+                    if float(start_distance) > float(finish_distance):
+                        await message.answer('Ошибка ввода! ⛔ \nПервое число не может быть больше второго, '
+                                             'попробуйте снова')
+                        await current_state.distance.set()
+                    else:
+                        logger.info(f'Пользователь  c id {message.from_user.id} '
+                                    f'выбрал расстояние до центра  от {start_distance}км до {finish_distance}км')
+                        await state.update_data(start_distance=start_distance, finish_distance=finish_distance)
+                        await message.answer("Заезд: ", reply_markup=await SimpleCalendar().start_calendar())
+                        await current_state.arrival_date.set()
+                except ValueError:
+                    await message.answer('Ошибка ввода! ⛔ \nВведенные данные не являются числом, попробуйте снова')
+                    await current_state.distance.set()
+
         else:
-            await message.answer('Ошибка ввода! ⛔ \nВведенные данные не являются числом, попробуйте снова')
+            await message.answer('Ошибка ввода! ⛔ \nНужно ввести два значения, попробуйте снова')
             await current_state.distance.set()
-    else:
-        await message.answer('Ошибка ввода! ⛔ \nНужно ввести два значения, попробуйте снова')
-        await current_state.distance.set()
+
+    except Exception as ex:
+        logger.error(ex)
 
 
 @logger.catch
@@ -334,4 +345,4 @@ async def scroll_photo(query: CallbackQuery, callback_data: dict, state: FSMCont
         await query.message.edit_media(photo, keyboard)
         await state.reset_state(with_data=False)
     except Exception as ex:
-        logger.exception(ex)
+        logger.error(ex)

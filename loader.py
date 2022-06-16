@@ -15,4 +15,3 @@ headers = {
         'x-rapidapi-host': "hotels4.p.rapidapi.com",
         'x-rapidapi-key': config('HOTELS_API')
     }
-
