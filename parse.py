@@ -129,25 +129,36 @@ async def get_photo(hotel_id) -> Union[List, Dict]:
         url = "https://hotels4.p.rapidapi.com/properties/get-hotel-photos"
 
         querystring = {'id': hotel_id}
+
         async with session.get(url, headers=headers, params=querystring) as response:
-            result = await response.json()
-            room_images = result.get('roomImages')[0].get('images')
             photo_list = list()
-            hotel_images = result.get('hotelImages')
-            count = 0
+            try:
+                result = await response.json()
+                room_images = result.get('roomImages')[0].get('images')
+                hotel_images = result.get('hotelImages')
+                count = 0
 
-            for i_photo in hotel_images:
-                if count != 5:
-                    photo_url = i_photo.get('baseUrl').replace('{size}', 'z')
-                    if requests.get(photo_url).status_code == 200:
-                        photo_list.append({'image_url': photo_url})
-                        count += 1
-                else:
-                    break
+                for i_photo in hotel_images:
+                    if count != 5:
+                        photo_url = i_photo.get('baseUrl').replace('{size}', 'z')
+                        if requests.get(photo_url).status_code == 200:
+                            photo_list.append({'image_url': photo_url})
+                            count += 1
+                    else:
+                        break
 
-            for i_photo in room_images:
-                photo_url = i_photo.get('baseUrl').replace('{size}', 'z')
-                if requests.get(photo_url).status_code == 200:
-                    photo_list.append({'image_url': photo_url})
+                for i_photo in room_images:
+                    if count != 5:
+                        photo_url = i_photo.get('baseUrl').replace('{size}', 'z')
+                        if requests.get(photo_url).status_code == 200:
+                            photo_list.append({'image_url': photo_url})
+                            count += 1
+                    else:
+                        break
 
-            return photo_list
+            except AttributeError:
+                photo_list.append(
+                    {'image_url': 'https://proprikol.ru/wp-content/uploads/2020/11/kartinki-oshibki-27.jpg'})
+
+            finally:
+                return photo_list
