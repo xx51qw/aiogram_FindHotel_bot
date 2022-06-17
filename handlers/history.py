@@ -18,7 +18,7 @@ async def show_hotel_history(message: types.Message) -> None:
             for hotel in hotels:
                 await message.answer(f'Введенная команда: {hotel.command}\n'
                                      f'Дата и время ввода команды: {hotel.time}\n'
-                                     f'Название отеля {hotel.name}\n'
+                                     f'\nНазвание отеля {hotel.name}\n'
                                      f'Адрес: {hotel.address}\n'
                                      f'Расстояние до центра города: {hotel.distance}\n'
                                      f'Рейтинг отеля: {hotel.rating}\n'

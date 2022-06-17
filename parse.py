@@ -136,9 +136,9 @@ async def get_photo(hotel_id) -> Union[List, Dict]:
                 result = await response.json()
                 room_images = result.get('roomImages')[0].get('images')
                 hotel_images = result.get('hotelImages')
-                count = 0
 
                 for i_photo in hotel_images:
+                    count = 0
                     if count != 5:
                         photo_url = i_photo.get('baseUrl').replace('{size}', 'z')
                         if requests.get(photo_url).status_code == 200:
@@ -148,6 +148,7 @@ async def get_photo(hotel_id) -> Union[List, Dict]:
                         break
 
                 for i_photo in room_images:
+                    count = 0
                     if count != 5:
                         photo_url = i_photo.get('baseUrl').replace('{size}', 'z')
                         if requests.get(photo_url).status_code == 200:
